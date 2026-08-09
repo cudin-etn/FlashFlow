@@ -1,0 +1,37 @@
+# macOS / editor metadata
+.DS_Store
+**/.DS_Store
+.idea/
+.vscode/
+
+# Dependencies and generated frontend output
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Wails / release build output. Keep build configuration and installer source.
+build/bin/
+app/dist/*
+!app/dist/gitkeep
+
+# Download cache; platform tools themselves remain versioned for reproducible builds.
+tools/_download/
+
+# Local binaries and diagnostic exports
+/FlashFlow
+/FlashFlow_v2
+/repomix-output.xml
+/debug_google.html
+
+# Environment files with secrets
+.env
+.env.*
+!.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Local test / tooling output
+coverage/
+*.log
+.vercel/

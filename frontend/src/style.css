@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- [MỚI] BẢNG MÀU THEME --- */
+/* Định nghĩa các biến màu RGB để Tailwind sử dụng */
+@layer base {
+  :root {
+    /* Mặc định: Blue (Xanh dương) */
+    --primary: 59 130 246;        /* blue-500 */
+    --primary-hover: 37 99 235;   /* blue-600 */
+    --primary-active: 29 78 216;  /* blue-700 */
+  }
+
+  /* Theme: Cyan (Xanh ngọc) */
+  .theme-cyan {
+    --primary: 6 182 212;
+    --primary-hover: 8 145 178;
+    --primary-active: 21 94 117;
+  }
+
+  /* Theme: Blue (Xanh dương đậm) */
+  .theme-blue {
+    --primary: 59 130 246;
+    --primary-hover: 37 99 235;
+    --primary-active: 29 78 216;
+  }
+
+  /* Theme: Purple (Tím mộng mơ) */
+  .theme-purple {
+    --primary: 168 85 247;
+    --primary-hover: 147 51 234;
+    --primary-active: 126 34 206;
+  }
+
+  /* Theme: Orange (Cam năng động) */
+  .theme-orange {
+    --primary: 249 115 22;
+    --primary-hover: 234 88 12;
+    --primary-active: 194 65 12;
+  }
+
+  /* Theme: Rose (Hồng nam tính) */
+  .theme-rose {
+    --primary: 244 63 94;
+    --primary-hover: 225 29 72;
+    --primary-active: 190 18 60;
+  }
+
+  /* Theme: Emerald (Xanh lá - Hacker) */
+  .theme-emerald {
+    --primary: 16 185 129;
+    --primary-hover: 5 150 105;
+    --primary-active: 4 120 87;
+  }
+}
+
+/* --- Cấu hình Gốc --- */
+:root {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+    background-color: theme(colors.bg.light);
+    color: #0f172a;
+    font-size: clamp(14px, 0.95vw, 16px);
+    text-rendering: optimizeLegibility;
+}
+
+html.dark {
+    background-color: theme(colors.bg.dark);
+    color: #e5e7eb;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-weight: 400;
+    line-height: 1.55;
+    letter-spacing: -0.01em;
+}
+
+#root { 
+    width: 100%;
+    min-height: 100vh;
+    overflow: visible; 
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+* { scrollbar-width: thin; }
+
+/* Animation FlashFlow */
+@keyframes flash-flow-move {
+  0% { background-position: 0 0; }
+  100% { background-position: 30px 30px; }
+}
+
+.flash-progress-bar {
+  background: linear-gradient(90deg, #06b6d4 0%, #2563eb 100%);
+  background-image: linear-gradient(
+    45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, 
+    rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent
+  );
+  background-size: 30px 30px;
+  animation: flash-flow-move 1s linear infinite;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+}
+
+.header-section {
+    display: grid;
+    grid-template-columns: 1fr; 
+    gap: 1.5rem; 
+    width: 100%;
+    align-items: stretch; 
+}
+
+@media (min-width: 1024px) {
+    .header-section {
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    }
+}
+
+.header-card {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; 
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  letter-spacing: 0;
+}
+
+/* --- COMPACT MODE (TỰ ĐỘNG KHI MÀN HÌNH THẤP < 800PX) --- */
+@media (max-height: 800px) {
+    /* 1. Thu nhỏ Font chữ toàn bộ App */
+    html { font-size: 13px !important; }
+
+    /* 2. Thu gọn Header */
+    .compact-header {
+        padding-top: 0.75rem !important;    /* 12px */
+        padding-bottom: 0.75rem !important; /* 12px */
+    }
+    
+    .compact-header img {
+        height: 2.25rem !important; /* 36px */
+        width: 2.25rem !important;
+    }
+    
+    .compact-header .text-2xl { font-size: 1.25rem !important; }
+    .compact-header .text-xs { font-size: 0.7rem !important; }
+
+    /* 3. Thu gọn Footer */
+    .compact-footer {
+        padding-top: 0.5rem !important;    /* 8px */
+        padding-bottom: 0.5rem !important; /* 8px */
+    }
+
+    /* 4. Thu gọn các Nút bấm & Card */
+    .btn-action, .dashboard-card {
+        padding: 0.75rem !important;
+        gap: 0.5rem !important;
+    }
+    
+    /* 5. Thu gọn Hero Card */
+    .hero-icon-box {
+        width: 5rem !important;  /* w-20 (80px) */
+        height: 5rem !important; /* h-20 */
+        margin-bottom: 0.5rem !important; 
+    }
+    
+    .hero-icon-svg {
+        width: 2.5rem !important; 
+        height: 2.5rem !important;
+    }
+
+    .hero-title {
+        font-size: 1.875rem !important; 
+        margin-bottom: 0.25rem !important; 
+    }
+
+    .hero-desc {
+        font-size: 0.875rem !important; 
+        line-height: 1.25 !important;
+        max-width: 90% !important;
+    }
+    
+    .store-card-content { gap: 1rem !important; }
+    .store-card-title { font-size: 2.25rem !important; }
+}
