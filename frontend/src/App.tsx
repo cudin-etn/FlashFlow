@@ -82,13 +82,19 @@ function App() {
   };
 
   useEffect(() => {
-    CheckForUpdate()
-      .then((info) => {
-        if (info && info.hasUpdate) {
-          setUpdateInfo(info);
-        }
-      })
-      .catch((err) => console.error("Check update failed:", err));
+    const doCheck = () => {
+      CheckForUpdate()
+        .then((info) => {
+          if (info && info.hasUpdate) {
+            setUpdateInfo(info);
+          }
+        })
+        .catch((err) => console.error("Check update failed:", err));
+    };
+
+    doCheck();
+    const interval = setInterval(doCheck, 15 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
