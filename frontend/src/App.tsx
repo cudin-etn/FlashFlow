@@ -3,9 +3,10 @@ import AppShell from "./components/AppShell";
 import Dashboard from "./components/DashboardPage";
 import FlashWizard from "./components/FlashWizard";
 import { BrandSelectionModal, BRAND_STORAGE_KEY, SKIP_BRAND_MODAL_KEY } from "./components/dashboard/BrandSelectionModal"; 
+import { ForceUpdateModal } from "./components/dashboard/ForceUpdateModal";
 import { EventsOn } from "../wailsjs/runtime/runtime";
 import { main } from "../wailsjs/go/models";
-import { SetDeviceBrand } from "../wailsjs/go/main/App";
+import { SetDeviceBrand, CheckForUpdate } from "../wailsjs/go/main/App";
 // Giữ lại import Icon nếu các component khác cần, nếu không có thể xóa bớt
 import { Smartphone, Zap, Aperture, Scan } from "lucide-react";
 
@@ -26,6 +27,7 @@ document.head.appendChild(styleTag);
 function App() {
   const [currentView, setCurrentView] = useState<AppView>("dashboard");
   const [selectedFile, setSelectedFile] = useState<string>("");
+  const [updateInfo, setUpdateInfo] = useState<main.UpdateInfo | null>(null);
   
   // State thiết bị cơ bản
   const [deviceStatus, setDeviceStatus] = useState<{ connected: boolean; mode: string }>({
@@ -78,6 +80,16 @@ function App() {
     setBrand(chosen);
     setShowBrandModal(false);
   };
+
+  useEffect(() => {
+    CheckForUpdate()
+      .then((info) => {
+        if (info && info.hasUpdate) {
+          setUpdateInfo(info);
+        }
+      })
+      .catch((err) => console.error("Check update failed:", err));
+  }, []);
 
   useEffect(() => {
     const off = EventsOn("device_update", (info: main.DeviceInfo) => {
@@ -152,6 +164,12 @@ function App() {
       <BrandSelectionModal 
           isOpen={showBrandModal} 
           onSelect={handleChooseBrand} 
+      />
+
+      {/* --- FORCE UPDATE MODAL (AUTO UPDATE CHECK) --- */}
+      <ForceUpdateModal 
+          isOpen={!!updateInfo?.hasUpdate} 
+          updateInfo={updateInfo} 
       />
     </>
   );

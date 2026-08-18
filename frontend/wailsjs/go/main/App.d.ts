@@ -46,8 +46,6 @@ export function ExtractFromPayload(arg1:string,arg2:Array<string>,arg3:string):P
 
 export function ExtractPartitions(arg1:main.ExtractRequest):Promise<void>;
 
-export function FetchOnlineRoms(arg1:string,arg2:string):Promise<Array<main.RomInfo>>;
-
 export function FlashImagesSmartGroup(arg1:Array<main.PartitionItem>):Promise<void>;
 
 export function FlashOnePlusROM(arg1:string,arg2:boolean,arg3:boolean,arg4:boolean):Promise<void>;
@@ -82,13 +80,13 @@ export function InstallDrivers():Promise<string>;
 
 export function IsFastbootD():Promise<boolean>;
 
+export function IsFreeMode():Promise<boolean>;
+
 export function IsLicenseCacheValid():Promise<boolean>;
 
 export function IsLicenseValid():Promise<boolean>;
 
 export function IsLicenseValidForFlash():Promise<boolean>;
-
-export function IsFreeMode():Promise<boolean>;
 
 export function ListBackups():Promise<Array<main.BackupItem>>;
 

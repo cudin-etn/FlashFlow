@@ -90,10 +90,6 @@ export function ExtractPartitions(arg1) {
   return window['go']['main']['App']['ExtractPartitions'](arg1);
 }
 
-export function FetchOnlineRoms(arg1, arg2) {
-  return window['go']['main']['App']['FetchOnlineRoms'](arg1, arg2);
-}
-
 export function FlashImagesSmartGroup(arg1) {
   return window['go']['main']['App']['FlashImagesSmartGroup'](arg1);
 }
@@ -162,6 +158,10 @@ export function IsFastbootD() {
   return window['go']['main']['App']['IsFastbootD']();
 }
 
+export function IsFreeMode() {
+  return window['go']['main']['App']['IsFreeMode']();
+}
+
 export function IsLicenseCacheValid() {
   return window['go']['main']['App']['IsLicenseCacheValid']();
 }
@@ -172,10 +172,6 @@ export function IsLicenseValid() {
 
 export function IsLicenseValidForFlash() {
   return window['go']['main']['App']['IsLicenseValidForFlash']();
-}
-
-export function IsFreeMode() {
-  return window['go']['main']['App']['IsFreeMode']();
 }
 
 export function ListBackups() {

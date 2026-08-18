@@ -426,30 +426,6 @@ export namespace main {
 	        this.selectedComponents = source["selectedComponents"];
 	    }
 	}
-	export class RomInfo {
-	    version: string;
-	    android: string;
-	    region: string;
-	    type: string;
-	    downloadUrl: string;
-	    size: string;
-	    date: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new RomInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.version = source["version"];
-	        this.android = source["android"];
-	        this.region = source["region"];
-	        this.type = source["type"];
-	        this.downloadUrl = source["downloadUrl"];
-	        this.size = source["size"];
-	        this.date = source["date"];
-	    }
-	}
 	export class RomSourceAnalysis {
 	    path: string;
 	    name: string;
