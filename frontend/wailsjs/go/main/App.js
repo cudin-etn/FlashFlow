@@ -114,6 +114,10 @@ export function GetBackupsDiskUsage() {
   return window['go']['main']['App']['GetBackupsDiskUsage']();
 }
 
+export function GetClientMessages() {
+  return window['go']['main']['App']['GetClientMessages']();
+}
+
 export function GetDiskFreeSpace() {
   return window['go']['main']['App']['GetDiskFreeSpace']();
 }
@@ -194,6 +198,10 @@ export function LockBootloader() {
   return window['go']['main']['App']['LockBootloader']();
 }
 
+export function MarkClientMessagesRead() {
+  return window['go']['main']['App']['MarkClientMessagesRead']();
+}
+
 export function NotifyUI(arg1, arg2) {
   return window['go']['main']['App']['NotifyUI'](arg1, arg2);
 }
@@ -212,6 +220,10 @@ export function PauseDeviceWatcher() {
 
 export function Ping() {
   return window['go']['main']['App']['Ping']();
+}
+
+export function PollAdminMessages() {
+  return window['go']['main']['App']['PollAdminMessages']();
 }
 
 export function RebootBootloader() {
@@ -284,6 +296,10 @@ export function SelectRomFile() {
 
 export function SelectRomFolder() {
   return window['go']['main']['App']['SelectRomFolder']();
+}
+
+export function SendClientMessage(arg1) {
+  return window['go']['main']['App']['SendClientMessage'](arg1);
 }
 
 export function SetDeviceBrand(arg1) {

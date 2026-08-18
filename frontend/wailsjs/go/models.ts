@@ -152,6 +152,28 @@ export namespace main {
 	        this.mediaFolders = source["mediaFolders"];
 	    }
 	}
+	export class ClientMessage {
+	    id: string;
+	    hwid: string;
+	    sender: string;
+	    message: string;
+	    created_at: string;
+	    is_read: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new ClientMessage(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.hwid = source["hwid"];
+	        this.sender = source["sender"];
+	        this.message = source["message"];
+	        this.created_at = source["created_at"];
+	        this.is_read = source["is_read"];
+	    }
+	}
 	export class QuickActions {
 	    rebootSystem: boolean;
 	    rebootBootloader: boolean;

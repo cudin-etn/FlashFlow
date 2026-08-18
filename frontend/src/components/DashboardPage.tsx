@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Zap, Layers, Database, ShoppingBag,
-  LayoutGrid, ShieldCheck, Cog, ChevronRight, Crown, Sun, Moon, Lock, Copy, Archive, Scissors, FileText
+  LayoutGrid, ShieldCheck, Cog, ChevronRight, Crown, Sun, Moon, Lock, Copy, Archive, Scissors, FileText, MessageSquareText
 } from "lucide-react";
 import { WindowSetDarkTheme, WindowSetLightTheme, WindowSetSystemDefaultTheme } from "../../wailsjs/runtime/runtime";
 import { Toaster, toast } from 'sonner';
@@ -17,8 +17,9 @@ import { SettingsModal } from "./dashboard/SettingsModal";
  import { GetHWID, IsFreeMode } from "../../wailsjs/go/main/App";
  import { DevicePanel } from "./dashboard/DevicePanel";
  import { FlashHistoryModal } from "./dashboard/FlashHistoryModal";
- import { AdvancedToolsModal } from "./dashboard/AdvancedToolsModal";
- import { ComingSoonModal } from "./dashboard/ComingSoonModal";
+import { AdvancedToolsModal } from "./dashboard/AdvancedToolsModal";
+import { ComingSoonModal } from "./dashboard/ComingSoonModal";
+import { AdminMessageModal } from "./dashboard/AdminMessageModal";
 
 // --- LOGIC BINDINGS ---
 const EventsOn = (eventName: string, callback: any) => {
@@ -151,6 +152,7 @@ export default function Dashboard({ onStartAIMode, brandSelected = false }: any)
   const [showAdvancedTools, setShowAdvancedTools] = useState(false);
   const [showBackupComingSoon, setShowBackupComingSoon] = useState(false);
   const [showFlashHistory, setShowFlashHistory] = useState(false);
+  const [showAdminMessage, setShowAdminMessage] = useState(false);
 
   useEffect(() => {
       if (GetHWID) GetHWID().then((id: string) => setMyHWID(id)).catch(console.error);
@@ -289,10 +291,15 @@ export default function Dashboard({ onStartAIMode, brandSelected = false }: any)
       }
     });
 
+    const offAdminMsg = EventsOn("admin_message_received", (payload: any) => {
+      setShowAdminMessage(true);
+    });
+
     return () => { 
       if (off) off(); 
       if (offModeSwitching) offModeSwitching();
       if (offModeSwitchDone) offModeSwitchDone();
+      if (offAdminMsg) offAdminMsg();
       // Cleanup timer on unmount
       if (modeSwitchTimerRef.current) {
         clearTimeout(modeSwitchTimerRef.current);
@@ -385,7 +392,7 @@ export default function Dashboard({ onStartAIMode, brandSelected = false }: any)
                       <h1 className="text-l font-black text-slate-800 dark:text-white tracking-tight leading-none">Flash Flow</h1>
                       <div className="flex items-center gap-2 mt-1.5">
                          <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/5 text-[9px] font-black text-slate-600 dark:text-slate-300 shadow-sm">
-                            v2.0.3
+                            v2.1.0
                          </span>
                       </div>
                    </div>
@@ -501,6 +508,7 @@ export default function Dashboard({ onStartAIMode, brandSelected = false }: any)
                      { icon: Archive, label: 'Backup', action: () => !isFlashing && setShowBackupComingSoon(true), gradient: 'from-teal-500 to-emerald-500' },
                      { icon: Scissors, label: 'Advanced', action: () => !isFlashing && setShowAdvancedTools(true), gradient: 'from-violet-500 to-purple-500' },
                      { icon: FileText, label: 'History', action: () => !isFlashing && setShowFlashHistory(true), gradient: 'from-indigo-500 to-blue-500' },
+                     { icon: MessageSquareText, label: 'Tin nhắn', action: () => !isFlashing && setShowAdminMessage(true), gradient: 'from-amber-500 to-rose-500' },
                   ].map((item, idx) => (
                      <button key={idx} onClick={item.action} disabled={isFlashing}
                         className={`py-2.5 px-3 rounded-[14px] bg-gradient-to-r ${item.gradient} text-white font-bold text-[11px] flex items-center justify-center gap-1.5 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all outline-none
@@ -525,6 +533,7 @@ export default function Dashboard({ onStartAIMode, brandSelected = false }: any)
       <AdvancedToolsModal isOpen={showAdvancedTools} onClose={() => setShowAdvancedTools(false)} device={device} currentBrand={device.vendor} />
       <ComingSoonModal isOpen={showBackupComingSoon} onClose={() => setShowBackupComingSoon(false)} />
       <FlashHistoryModal isOpen={showFlashHistory} onClose={() => setShowFlashHistory(false)} />
+      <AdminMessageModal isOpen={showAdminMessage} onClose={() => setShowAdminMessage(false)} />
 
       <Toaster position="bottom-right" richColors theme={theme === 'dark' ? 'dark' : 'light'} closeButton />
     </div>

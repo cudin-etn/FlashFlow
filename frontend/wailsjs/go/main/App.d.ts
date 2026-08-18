@@ -58,6 +58,8 @@ export function GetBackupEstimatedSize():Promise<number>;
 
 export function GetBackupsDiskUsage():Promise<number>;
 
+export function GetClientMessages():Promise<Array<main.ClientMessage>>;
+
 export function GetDiskFreeSpace():Promise<number>;
 
 export function GetFlashReportDetail(arg1:string):Promise<main.FlashReport>;
@@ -98,6 +100,8 @@ export function LoadLicenseCache():Promise<main.LicenseCacheEntry>;
 
 export function LockBootloader():Promise<void>;
 
+export function MarkClientMessagesRead():Promise<void>;
+
 export function NotifyUI(arg1:string,arg2:string):Promise<void>;
 
 export function OpenBrowserToDownload():Promise<void>;
@@ -107,6 +111,8 @@ export function OpenLibraryFolder(arg1:string):Promise<void>;
 export function PauseDeviceWatcher():Promise<void>;
 
 export function Ping():Promise<string>;
+
+export function PollAdminMessages():Promise<void>;
 
 export function RebootBootloader():Promise<void>;
 
@@ -143,6 +149,8 @@ export function SelectOutputDirectory():Promise<string>;
 export function SelectRomFile():Promise<string>;
 
 export function SelectRomFolder():Promise<string>;
+
+export function SendClientMessage(arg1:string):Promise<void>;
 
 export function SetDeviceBrand(arg1:string):Promise<void>;
 

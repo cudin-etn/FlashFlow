@@ -171,6 +171,20 @@ func (a *App) startup(ctx context.Context) {
 	wailsRuntime.EventsEmit(a.ctx, "show_brand_selector", true)
 	go a.deviceWatcher()
 	a.CheckLicenseOnInit()
+	go func() {
+		time.Sleep(3 * time.Second)
+		a.PollAdminMessages()
+		ticker := time.NewTicker(2 * time.Minute)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-a.ctx.Done():
+				return
+			case <-ticker.C:
+				a.PollAdminMessages()
+			}
+		}
+	}()
 }
 
 func (a *App) startFlashReport(romPath, vendor string, wipe bool, skipFirmware bool, force bool) {
@@ -1587,7 +1601,7 @@ type UpdateInfo struct {
 	Changelog  string `json:"changelog"`
 }
 
-const CurrentVersion = "2.0.3"
+const CurrentVersion = "2.1.0"
 const AppIdentifier = "flashflow"
 
 func cleanReleaseVersion(tagName string) string {
