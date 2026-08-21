@@ -58,12 +58,12 @@ func onePlusFastbootDSlotPolicy(part string, logical bool) onePlusSlotPolicy {
 	return onePlusTargetA
 }
 
-// shouldFlashOnePlusImageAfterSuper prevents loose logical images from being
-// written on top of a super.img-defined layout. Physical firmware that was not
-// already handled in bootloader remains eligible for the FastbootD phase.
-func shouldFlashOnePlusImageAfterSuper(part string) bool {
+// shouldFlashOnePlusFastbootDAfterSuper only avoids repeating images that were
+// already handled in the bootloader phase. Logical images shipped next to
+// super.img are intentional package contents and remain eligible for FastbootD.
+func shouldFlashOnePlusFastbootDAfterSuper(part string) bool {
 	part = normalizeOnePlusPartition(part)
-	return part != "super" && !BootloaderFiles[part] && !isOnePlusLogicalPartition(part)
+	return part != "super" && !BootloaderFiles[part]
 }
 
 // buildOnePlusLogicalProvisionPlan mirrors the reference OnePlus

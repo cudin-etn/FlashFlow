@@ -90,14 +90,16 @@ func TestOnePlusLogicalPartitionClassification(t *testing.T) {
 	}
 }
 
-func TestShouldFlashOnePlusImageAfterSuper(t *testing.T) {
-	for _, part := range []string{"super", "boot", "system", "system_dlkm_oki", "my_product"} {
-		if shouldFlashOnePlusImageAfterSuper(part) {
-			t.Fatalf("%q must not be reflashed after super.img", part)
+func TestShouldFlashOnePlusFastbootDAfterSuper(t *testing.T) {
+	for _, part := range []string{"super", "boot", "dtbo", "vendor_boot"} {
+		if shouldFlashOnePlusFastbootDAfterSuper(part) {
+			t.Fatalf("%q was already handled before FastbootD", part)
 		}
 	}
-	if !shouldFlashOnePlusImageAfterSuper("abl") {
-		t.Fatal("physical firmware abl should remain eligible after super.img")
+	for _, part := range []string{"abl", "system", "system_dlkm_oki", "my_product"} {
+		if !shouldFlashOnePlusFastbootDAfterSuper(part) {
+			t.Fatalf("%q must still be flashed when shipped next to super.img", part)
+		}
 	}
 }
 

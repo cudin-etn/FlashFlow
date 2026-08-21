@@ -583,13 +583,13 @@ func (a *App) executeOnePlusSmartFlash(rootPath, fastbootBin, serial string, ski
 
 	if hasSuper {
 		// TRƯỜNG HỢP SUPER ROM
-		wailsRuntime.EventsEmit(a.ctx, "flash_log", ">>> [Logical] super.img đã chứa layout/data dynamic partitions; không flash lặp các image logical rời.")
+		wailsRuntime.EventsEmit(a.ctx, "flash_log", ">>> [SUPER ROM] super.img đã nạp; tiếp tục flash toàn bộ image còn lại trong gói.")
 		for _, img := range images {
 			part := normalizeOnePlusPartition(img.Part)
-			// super.img owns the dynamic-partition layout and contents. Flashing
-			// loose logical images again can target names that do not exist in
-			// that layout and can also consume super space twice.
-			if !shouldFlashOnePlusImageAfterSuper(part) {
+			// boot/kernel images and super were already flashed in the previous
+			// phase. Every other image from the package must still be processed,
+			// including loose logical overlays shipped alongside super.img.
+			if !shouldFlashOnePlusFastbootDAfterSuper(part) {
 				continue
 			}
 
@@ -613,7 +613,7 @@ func (a *App) executeOnePlusSmartFlash(rootPath, fastbootBin, serial string, ski
 
 			updateStatus("[4/5] FastbootD: " + part)
 			wailsRuntime.EventsEmit(a.ctx, "flash_log", fmt.Sprintf(">>> [FastbootD] %s", part))
-			if err := a.flashOnePlusFastbootDImage(fastbootBin, serial, part, img.Path, false); err != nil {
+			if err := a.flashOnePlusFastbootDImage(fastbootBin, serial, part, img.Path, isOnePlusLogicalPartition(part)); err != nil {
 				a.logFlashError(part, "FastbootD", err)
 				a.markFlashFailure(fmt.Sprintf("flash %s thất bại ở FastbootD: %v", part, err))
 				return fmt.Errorf("flash %s ở FastbootD thất bại: %v", part, err)
