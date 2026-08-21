@@ -1607,8 +1607,9 @@ type UpdateInfo struct {
 	Changelog  string `json:"changelog"`
 }
 
-const CurrentVersion = "2.1.1"
+const CurrentVersion = "2.1.2"
 const AppIdentifier = "flashflow"
+const FlashFlowReleasesAPI = "https://api.github.com/repos/cudin-etn/FlashFlow/releases"
 
 func cleanReleaseVersion(tagName string) string {
 	clean := strings.ToLower(strings.TrimSpace(tagName))
@@ -1666,7 +1667,7 @@ func versionParts(version string) []int {
 }
 
 func (a *App) CheckForUpdate() UpdateInfo {
-	url := "https://api.github.com/repos/cudin-etn/t-dev-studio/releases"
+	url := FlashFlowReleasesAPI
 
 	client := http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Get(url)
