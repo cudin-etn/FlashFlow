@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { RefreshCw, Zap, Activity, Terminal, Unlock, ShieldCheck, X, Power, AlertTriangle, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { toast } from 'sonner';
 
 const GoApp: any = (window as any).go?.main?.App;
 
@@ -83,6 +84,24 @@ export const ControlCenterModal = ({ isOpen, onClose, device }: any) => {
   };
   const currentStyle = styleMap[activeBtn.color];
 
+  const executeAction = async () => {
+    if (!device?.connected) {
+      toast.error(t('status_disconnected') || 'Thiết bị chưa kết nối.');
+      return;
+    }
+    if (typeof activeBtn.action !== 'function') {
+      toast.error(t('control_action_unavailable') || 'Tác vụ hiện chưa sẵn sàng.');
+      return;
+    }
+    try {
+      await activeBtn.action();
+      toast.success(t('status_ready') || 'Đã gửi lệnh tới thiết bị.');
+    } catch (error: any) {
+      const message = error?.message || String(error || '');
+      toast.error(message || (t('control_action_invalid') || 'Không thể thực hiện tác vụ.'));
+    }
+  };
+
   if (!isOpen) return null;
 
   return createPortal(
@@ -159,7 +178,7 @@ export const ControlCenterModal = ({ isOpen, onClose, device }: any) => {
 
             {/* KHỐI NÚT HERO KHỔNG LỒ (Giờ để nền trong suốt vì cột phải đã gánh màu) */}
             <button 
-                onClick={() => activeBtn.action?.()} 
+                onClick={executeAction}
                 disabled={!device.connected}
                 className={`
                     flex-1 flex flex-col items-center justify-center text-center p-10 relative group outline-none modal-hero-card w-full

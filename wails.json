@@ -11,7 +11,13 @@
     "email": "tungninh88@gmail.com"
   },
   "description": "Modern Android ROM flashing tool",
-  "version": "2.1.0",
+  "version": "2.1.1",
+  "info": {
+    "productName": "FlashFlow",
+    "productVersion": "2.1.1",
+    "copyright": "© 2026 TungNinh",
+    "comments": "Android Flashing Utility"
+  },
   "windows": {
     "icon": "build/icon.ico",
     "width": 1200,
@@ -28,13 +34,7 @@
     "width": 1200,
     "height": 860,
     "minWidth": 1200,
-    "minHeight": 860,
-    "info": {
-      "productName": "PixelFlow",
-      "productVersion": "2.1.0",
-      "copyright": "© 2026 TungNinh",
-      "comments": "Android Flashing Utility"
-    }
+    "minHeight": 860
   },
 
   "updater": {

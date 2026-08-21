@@ -686,11 +686,23 @@ func (a *App) executeOnePlusSmartFlash(rootPath, fastbootBin, serial string, ski
 
 func (a *App) flashOnePlusFastbootDImage(fastbootBin, serial, part, imgPath string, logical bool) error {
 	part = normalizeOnePlusPartition(part)
-	hasSlot, known := a.queryOnePlusHasSlot(serial, part)
-	if !known {
-		wailsRuntime.EventsEmit(a.ctx, "flash_log", fmt.Sprintf(">>> [FastbootD] %s: has-slot unavailable, using direct flash.", part))
+	policy := onePlusFastbootDSlotPolicy(part, logical)
+	hasSlot := false
+	if policy == onePlusDirect {
+		// Dynamic/logical partitions may be exposed without _a/_b even on an
+		// A/B phone (for example OnePlus my_* partitions).  FastbootD resolves
+		// the active logical target when we use its real base name.  Forcing
+		// --slot=a turns my_bigball into my_bigball_a, which does not exist on
+		// devices such as canoe.
+		wailsRuntime.EventsEmit(a.ctx, "flash_log", fmt.Sprintf(">>> [FastbootD] %s: logical partition, flashing its real name (no forced slot).", part))
+	} else {
+		var known bool
+		hasSlot, known = a.queryOnePlusHasSlot(serial, part)
+		if !known {
+			wailsRuntime.EventsEmit(a.ctx, "flash_log", fmt.Sprintf(">>> [FastbootD] %s: has-slot unavailable, using direct flash.", part))
+		}
 	}
-	commands := buildOnePlusFlashArgs(serial, part, imgPath, onePlusTargetA, hasSlot)
+	commands := buildOnePlusFlashArgs(serial, part, imgPath, policy, hasSlot)
 	for _, args := range commands {
 		group := "FastbootD"
 		if logical {

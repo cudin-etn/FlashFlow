@@ -95,26 +95,41 @@ func parseADBOutput(output string) []Device {
 	var devs []Device
 	lines := strings.Split(output, "\n")
 	for _, line := range lines {
+		line = strings.TrimSpace(line)
 		if line == "" || strings.HasPrefix(line, "List of devices") {
 			continue
 		}
 
 		fields := strings.Fields(line)
-		if len(fields) >= 2 {
-			d := Device{
-				Serial: fields[0],
-				State:  fields[1],
-				Model:  "Android Device",
-			}
-
-			for _, f := range fields {
-				if strings.HasPrefix(f, "model:") {
-					modelName := strings.ReplaceAll(strings.TrimPrefix(f, "model:"), "_", " ")
-					d.Model = modelName
-				}
-			}
-			devs = append(devs, d)
+		if len(fields) < 2 {
+			continue
 		}
+
+		// adb starts its server lazily.  Its startup messages are written to
+		// stderr and are intentionally merged with stdout by runCommand.  A
+		// line such as "* daemon started successfully" also has two words, but
+		// it is not a device.  Accept only documented adb device states so a
+		// cold start cannot produce a false "device connected" notification.
+		state := strings.ToLower(fields[1])
+		switch state {
+		case "device", "offline", "unauthorized", "recovery", "sideload", "bootloader":
+		default:
+			continue
+		}
+
+		d := Device{
+			Serial: fields[0],
+			State:  state,
+			Model:  "Android Device",
+		}
+
+		for _, f := range fields {
+			if strings.HasPrefix(f, "model:") {
+				modelName := strings.ReplaceAll(strings.TrimPrefix(f, "model:"), "_", " ")
+				d.Model = modelName
+			}
+		}
+		devs = append(devs, d)
 	}
 	return devs
 }

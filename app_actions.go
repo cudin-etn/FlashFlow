@@ -10,14 +10,16 @@ import (
 
 // --- QUICK ACTIONS ---
 
-func (a *App) withActiveDevice(fn func(d DeviceInfo) error) {
-	a.withCmdAsync(func() error {
-		d := a.CheckDevice()
-		if !d.Connected {
-			return nil
-		}
-		return fn(d)
-	})
+func (a *App) withActiveDevice(fn func(d DeviceInfo) error) error {
+	if !a.beginCmd() {
+		return fmt.Errorf("đang có một tác vụ khác đang chạy")
+	}
+	defer a.endCmd()
+	d := a.CheckDevice()
+	if !d.Connected {
+		return fmt.Errorf("không tìm thấy thiết bị đang kết nối")
+	}
+	return fn(d)
 }
 
 func (a *App) ensureBootloader(d DeviceInfo) error {
@@ -58,8 +60,8 @@ func (a *App) waitForAdb(serial string) error {
 	}
 }
 
-func (a *App) RebootSystem() {
-	a.withActiveDevice(func(d DeviceInfo) error {
+func (a *App) RebootSystem() error {
+	return a.withActiveDevice(func(d DeviceInfo) error {
 		a.NotifyUI("info", "Đang khởi động lại hệ thống...")
 		if strings.HasPrefix(strings.ToLower(d.State), "fastboot") || d.State == "bootloader" || d.State == "fastbootd" {
 			if err := a.RunCommandWithDir("", "fastboot", "-s", d.Serial, "reboot"); err != nil {
@@ -168,8 +170,8 @@ func (a *App) RebootFastbootD() error {
 	return fmt.Errorf("không tìm thấy thiết bị")
 }
 
-func (a *App) UnlockBootloader() {
-	a.withActiveDevice(func(d DeviceInfo) error {
+func (a *App) UnlockBootloader() error {
+	return a.withActiveDevice(func(d DeviceInfo) error {
 		if err := a.ensureBootloader(d); err != nil {
 			return err
 		}
@@ -177,8 +179,8 @@ func (a *App) UnlockBootloader() {
 	})
 }
 
-func (a *App) LockBootloader() {
-	a.withActiveDevice(func(d DeviceInfo) error {
+func (a *App) LockBootloader() error {
+	return a.withActiveDevice(func(d DeviceInfo) error {
 		if err := a.ensureBootloader(d); err != nil {
 			return err
 		}

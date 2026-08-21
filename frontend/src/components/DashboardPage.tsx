@@ -392,7 +392,7 @@ export default function Dashboard({ onStartAIMode, brandSelected = false }: any)
                       <h1 className="text-l font-black text-slate-800 dark:text-white tracking-tight leading-none">Flash Flow</h1>
                       <div className="flex items-center gap-2 mt-1.5">
                          <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/5 text-[9px] font-black text-slate-600 dark:text-slate-300 shadow-sm">
-                            v2.1.0
+                            v2.1.1
                          </span>
                       </div>
                    </div>

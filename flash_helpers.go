@@ -17,7 +17,7 @@ import (
 func flashErrorSuggestion(errOutput string) string {
 	lower := strings.ToLower(errOutput)
 	switch {
-	case strings.Contains(lower, "partition not found") || strings.Contains(lower, "no such partition"):
+	case strings.Contains(lower, "partition not found") || strings.Contains(lower, "no such partition") || strings.Contains(lower, "no such file or directory"):
 		return "Gợi ý: Kiểm tra lại tên partition — có thể partition này không tồn tại trên thiết bị của bạn."
 	case strings.Contains(lower, "failed (remote") || strings.Contains(lower, "remote failure"):
 		return "Gợi ý: Kiểm tra kết nối USB và thử cáp/cổng USB khác. Lỗi 'FAILED (remote)' thường do kết nối không ổn định."

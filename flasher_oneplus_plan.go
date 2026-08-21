@@ -42,6 +42,16 @@ func buildOnePlusFlashArgs(serial, part, imagePath string, policy onePlusSlotPol
 	return [][]string{args}
 }
 
+// onePlusFastbootDSlotPolicy keeps logical partitions on their real FastbootD
+// names.  A/B applies to boot and selected physical firmware partitions, not
+// blindly to every logical image extracted from a payload.
+func onePlusFastbootDSlotPolicy(part string, logical bool) onePlusSlotPolicy {
+	if logical || isOnePlusLogicalPartition(part) {
+		return onePlusDirect
+	}
+	return onePlusTargetA
+}
+
 func onePlusFastbootArgs(serial string, args ...string) []string {
 	result := []string{"-s", serial}
 	return append(result, args...)

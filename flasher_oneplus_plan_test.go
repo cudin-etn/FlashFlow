@@ -56,6 +56,27 @@ func TestBuildOnePlusFlashArgs(t *testing.T) {
 	}
 }
 
+func TestOnePlusFastbootDSlotPolicy(t *testing.T) {
+	tests := []struct {
+		name    string
+		part    string
+		logical bool
+		want    onePlusSlotPolicy
+	}{
+		{name: "declared logical partition", part: "system", logical: true, want: onePlusDirect},
+		{name: "OnePlus logical partition", part: "my_bigball", logical: false, want: onePlusDirect},
+		{name: "firmware remains target A", part: "abl", logical: false, want: onePlusTargetA},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := onePlusFastbootDSlotPolicy(test.part, test.logical); got != test.want {
+				t.Fatalf("onePlusFastbootDSlotPolicy(%q, %t) = %v, want %v", test.part, test.logical, got, test.want)
+			}
+		})
+	}
+}
+
 func TestDimensitySafeModeClassification(t *testing.T) {
 	info := classifyOnePlusPlatform("MediaTek", "Dimensity 9000", "mt6983", "device")
 	if info.Family != onePlusPlatformMediaTek {

@@ -38,6 +38,8 @@ func (a *App) IsFreeMode() bool {
 
 var (
 	licenseMu           sync.RWMutex
+	hwidOnce            sync.Once
+	hwidValue           string
 	globalLicenseStatus = LicenseResponse{
 		Result:   "UNKNOWN",
 		Type:     "TRIAL",
@@ -208,6 +210,16 @@ func (a *App) IsLicenseValidForFlash() bool {
 
 // 1. Lấy mã máy (HWID) - PHIÊN BẢN V3 (FIX UNKNOWN)
 func (a *App) GetHWID() string {
+	// The desktop startup path, license check and message poll can all ask for
+	// the HWID at nearly the same time. Cache it for this process so Windows
+	// does not repeatedly spawn PowerShell and startup remains responsive.
+	hwidOnce.Do(func() {
+		hwidValue = detectHWID()
+	})
+	return hwidValue
+}
+
+func detectHWID() string {
 	osName := runtime.GOOS
 
 	// --- MAC OS ---
@@ -308,9 +320,19 @@ func buildLicenseRequestURL(hwid string, noCache bool) string {
 	}
 	query := endpoint.Query()
 	query.Set("hwid", hwid)
+	// Keep the legacy fields while also sending normalized values.  The admin
+	// dashboard can therefore group clients by a human-readable OS/version
+	// without breaking older deployments that only read `os` and
+	// `app_version`.
+	osName, osVersion := currentOSIdentity()
 	query.Set("app_version", CurrentVersion)
-	query.Set("os", runtime.GOOS)
+	query.Set("client_version", CurrentVersion)
+	query.Set("os", osName)
+	query.Set("os_platform", runtime.GOOS)
+	query.Set("os_version", osVersion)
 	query.Set("arch", runtime.GOARCH)
+	query.Set("client_arch", runtime.GOARCH)
+	query.Set("activity", "launch")
 	if noCache {
 		query.Set("nocache", fmt.Sprintf("%d", time.Now().Unix()))
 	}
@@ -318,11 +340,87 @@ func buildLicenseRequestURL(hwid string, noCache bool) string {
 	return endpoint.String()
 }
 
+// buildClientActivityURL records that the client is still running.  It uses
+// the same backwards-compatible endpoint and only adds metadata; older
+// deployments simply ignore the extra query parameters.
+func buildClientActivityURL(hwid string) string {
+	endpoint, err := url.Parse(buildLicenseRequestURL(hwid, true))
+	if err != nil {
+		return LICENSE_API_URL
+	}
+	query := endpoint.Query()
+	query.Set("activity", "heartbeat")
+	endpoint.RawQuery = query.Encode()
+	return endpoint.String()
+}
+
+func (a *App) reportClientActivity() {
+	client := http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(buildClientActivityURL(a.GetHWID()))
+	if err == nil && resp != nil {
+		_ = resp.Body.Close()
+	}
+}
+
+func (a *App) clientActivityLoop() {
+	ticker := time.NewTicker(10 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			a.reportClientActivity()
+		case <-a.ctx.Done():
+			return
+		}
+	}
+}
+
+// currentOSIdentity returns stable, display-friendly host OS information.
+// runtime.GOOS is intentionally retained separately in telemetry because it
+// is the backwards-compatible machine-readable platform identifier.
+func currentOSIdentity() (name, version string) {
+	switch runtime.GOOS {
+	case "darwin":
+		name = "macOS"
+		if out, err := exec.Command("sw_vers", "-productVersion").Output(); err == nil {
+			version = strings.TrimSpace(string(out))
+		}
+	case "windows":
+		name = "Windows"
+		// CIM is available on supported Windows releases and avoids relying on
+		// the deprecated WMIC executable.
+		if out, err := exec.Command("powershell", "-NoProfile", "-Command", "(Get-CimInstance Win32_OperatingSystem).Version").Output(); err == nil {
+			version = strings.TrimSpace(string(out))
+		}
+	case "linux":
+		name = "Linux"
+		if data, err := os.ReadFile("/etc/os-release"); err == nil {
+			for _, line := range strings.Split(string(data), "\n") {
+				if strings.HasPrefix(line, "VERSION_ID=") {
+					version = strings.Trim(strings.TrimPrefix(line, "VERSION_ID="), "\"")
+					break
+				}
+			}
+		}
+	default:
+		name = runtime.GOOS
+	}
+	if version == "" {
+		version = "unknown"
+	}
+	return name, version
+}
+
 // 2. Gọi Server Check License (Chạy khi mở App)
 func (a *App) CheckLicenseOnInit() {
 	go func() {
+		go a.clientActivityLoop()
 		hwid := a.GetHWID()
-		requestURL := buildLicenseRequestURL(hwid, false)
+		// A fresh launch is telemetry, not a cacheable license lookup.  The
+		// cache buster makes the Apps Script handler record the app version on
+		// every client start instead of allowing an intermediary to reuse an
+		// older response for the same HWID.
+		requestURL := buildLicenseRequestURL(hwid, true)
 
 		client := http.Client{Timeout: 15 * time.Second}
 		resp, err := client.Get(requestURL)
@@ -368,6 +466,7 @@ func (a *App) CheckLicenseOnInit() {
 				}
 			}
 		}
+
 	}()
 }
 

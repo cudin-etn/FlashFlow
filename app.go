@@ -258,7 +258,13 @@ func (a *App) markSkippedARBPartition(partition string) {
 func (a *App) markFlashFailure(message string) {
 	a.reportMu.Lock()
 	if a.flashReport != nil {
-		a.flashReport.Failures = append(a.flashReport.Failures, message)
+		failures := a.flashReport.Failures
+		// A low-level flash function and StartFlashReal can both report the
+		// same error while unwinding. Keep the report actionable rather than
+		// listing one failure twice.
+		if len(failures) == 0 || failures[len(failures)-1] != message {
+			a.flashReport.Failures = append(failures, message)
+		}
 	}
 	a.reportMu.Unlock()
 }
@@ -1601,7 +1607,7 @@ type UpdateInfo struct {
 	Changelog  string `json:"changelog"`
 }
 
-const CurrentVersion = "2.1.0"
+const CurrentVersion = "2.1.1"
 const AppIdentifier = "flashflow"
 
 func cleanReleaseVersion(tagName string) string {
