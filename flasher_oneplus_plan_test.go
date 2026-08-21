@@ -77,6 +77,46 @@ func TestOnePlusFastbootDSlotPolicy(t *testing.T) {
 	}
 }
 
+func TestOnePlusLogicalPartitionClassification(t *testing.T) {
+	for _, part := range []string{
+		"system", "system_dlkm_oki", "system_dlkm_gki", "my_bigball", "my_preload_a",
+	} {
+		if !isOnePlusLogicalPartition(part) {
+			t.Fatalf("%q must be handled by dynamic logical provisioning", part)
+		}
+	}
+	if isOnePlusLogicalPartition("xbl") {
+		t.Fatal("physical firmware xbl must not be classified as logical")
+	}
+}
+
+func TestShouldFlashOnePlusImageAfterSuper(t *testing.T) {
+	for _, part := range []string{"super", "boot", "system", "system_dlkm_oki", "my_product"} {
+		if shouldFlashOnePlusImageAfterSuper(part) {
+			t.Fatalf("%q must not be reflashed after super.img", part)
+		}
+	}
+	if !shouldFlashOnePlusImageAfterSuper("abl") {
+		t.Fatal("physical firmware abl should remain eligible after super.img")
+	}
+}
+
+func TestBuildOnePlusLogicalProvisionPlan(t *testing.T) {
+	got := buildOnePlusLogicalProvisionPlan("SERIAL", "system_dlkm_oki", `C:\\rom\\system_dlkm_oki.img`)
+	want := []onePlusLogicalProvisionStep{
+		{Label: "delete", Args: []string{"-s", "SERIAL", "delete-logical-partition", "system_dlkm_oki_a"}, IgnoreFailure: true},
+		{Label: "delete", Args: []string{"-s", "SERIAL", "delete-logical-partition", "system_dlkm_oki_b"}, IgnoreFailure: true},
+		{Label: "delete", Args: []string{"-s", "SERIAL", "delete-logical-partition", "system_dlkm_oki_a-cow"}, IgnoreFailure: true},
+		{Label: "delete", Args: []string{"-s", "SERIAL", "delete-logical-partition", "system_dlkm_oki_b-cow"}, IgnoreFailure: true},
+		{Label: "create-a", Args: []string{"-s", "SERIAL", "create-logical-partition", "system_dlkm_oki_a", "1"}},
+		{Label: "create-b", Args: []string{"-s", "SERIAL", "create-logical-partition", "system_dlkm_oki_b", "1"}},
+		{Label: "flash-a", Args: []string{"-s", "SERIAL", "flash", "system_dlkm_oki_a", `C:\\rom\\system_dlkm_oki.img`}},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("logical provision plan mismatch\ngot:  %#v\nwant: %#v", got, want)
+	}
+}
+
 func TestDimensitySafeModeClassification(t *testing.T) {
 	info := classifyOnePlusPlatform("MediaTek", "Dimensity 9000", "mt6983", "device")
 	if info.Family != onePlusPlatformMediaTek {

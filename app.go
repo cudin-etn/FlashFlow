@@ -1620,7 +1620,7 @@ type UpdateInfo struct {
 	Changelog  string `json:"changelog"`
 }
 
-const CurrentVersion = "2.1.3"
+const CurrentVersion = "2.1.4"
 const AppIdentifier = "flashflow"
 const FlashFlowReleasesAPI = "https://api.github.com/repos/cudin-etn/FlashFlow/releases"
 

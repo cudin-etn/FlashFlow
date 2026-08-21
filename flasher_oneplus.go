@@ -30,7 +30,8 @@ var BootloaderFiles = map[string]bool{
 
 var LogicalPartitions = map[string]bool{
 	"system": true, "system_ext": true, "product": true, "vendor": true, "odm": true,
-	"system_dlkm": true, "vendor_dlkm": true, "odm_dlkm": true,
+	"system_dlkm": true, "system_dlkm_oki": true, "system_dlkm_gki": true,
+	"vendor_dlkm": true, "odm_dlkm": true,
 	"my_bigball": true, "my_carrier": true, "my_company": true,
 	"my_engineering": true, "my_heytap": true, "my_manifest": true,
 	"my_preload": true, "my_product": true, "my_region": true, "my_stock": true,
@@ -582,12 +583,13 @@ func (a *App) executeOnePlusSmartFlash(rootPath, fastbootBin, serial string, ski
 
 	if hasSuper {
 		// TRƯỜNG HỢP SUPER ROM
+		wailsRuntime.EventsEmit(a.ctx, "flash_log", ">>> [Logical] super.img đã chứa layout/data dynamic partitions; không flash lặp các image logical rời.")
 		for _, img := range images {
 			part := normalizeOnePlusPartition(img.Part)
-			// Chỉ bỏ qua chính super.img và nhóm đã flash ở Bootloader.
-			// Việc ROM có super.img không chứng minh các image logical đi kèm là bản
-			// sao; một số package vẫn cần nạp chúng như các image riêng/ghi đè.
-			if part == "super" || BootloaderFiles[part] {
+			// super.img owns the dynamic-partition layout and contents. Flashing
+			// loose logical images again can target names that do not exist in
+			// that layout and can also consume super space twice.
+			if !shouldFlashOnePlusImageAfterSuper(part) {
 				continue
 			}
 
@@ -654,7 +656,10 @@ func (a *App) executeOnePlusSmartFlash(rootPath, fastbootBin, serial string, ski
 			a.markFlashPartition(part)
 		}
 
-		// Resize & Flash Logical
+		// A loose-image/payload package has no super.img to establish the
+		// dynamic-partition metadata. Recreate the A/B logical entries first,
+		// then write the large image only to slot A, matching the reference
+		// Regional/Universal OnePlus flasher workflow.
 		for _, img := range images {
 			part := normalizeOnePlusPartition(img.Part)
 			if isOnePlusLogicalPartition(part) {
@@ -666,8 +671,8 @@ func (a *App) executeOnePlusSmartFlash(rootPath, fastbootBin, serial string, ski
 				}
 
 				updateStatus("[4/5] Logical: " + part)
-				wailsRuntime.EventsEmit(a.ctx, "flash_log", fmt.Sprintf(">>> [Logical] %s", part))
-				if err := a.flashOnePlusFastbootDImage(fastbootBin, serial, part, img.Path, true); err != nil {
+				wailsRuntime.EventsEmit(a.ctx, "flash_log", fmt.Sprintf(">>> [Logical] Tạo lại %s_a/%s_b và flash slot A", part, part))
+				if err := a.provisionAndFlashOnePlusLogicalImage(fastbootBin, serial, part, img.Path); err != nil {
 					a.logFlashError(part, "FastbootD/Logical", err)
 					a.markFlashFailure(fmt.Sprintf("flash logical %s thất bại: %v", part, err))
 					return fmt.Errorf("flash logical %s thất bại: %v", part, err)
@@ -688,6 +693,24 @@ func (a *App) executeOnePlusSmartFlash(rootPath, fastbootBin, serial string, ski
 
 	wailsRuntime.EventsEmit(a.ctx, "flash_log", ">>> [5/5] ONEPLUS FLASH COMPLETE")
 	wailsRuntime.EventsEmit(a.ctx, "flash_log", "========================================")
+	return nil
+}
+
+func (a *App) provisionAndFlashOnePlusLogicalImage(fastbootBin, serial, part, imgPath string) error {
+	part = normalizeOnePlusPartition(part)
+	for _, step := range buildOnePlusLogicalProvisionPlan(serial, part, imgPath) {
+		wailsRuntime.EventsEmit(a.ctx, "flash_log", fmt.Sprintf(">>> [Logical/%s] fastboot %s", step.Label, strings.Join(step.Args, " ")))
+		if err := a.RunCommandStreaming("", fastbootBin, step.Args...); err != nil {
+			if step.IgnoreFailure {
+				// Missing old partitions and snapshot COW devices are expected on
+				// clean/differently-partitioned phones. The following create step is
+				// authoritative and will stop safely if provisioning is impossible.
+				wailsRuntime.EventsEmit(a.ctx, "flash_log", fmt.Sprintf(">>> [Logical/%s] Không có entry cũ hoặc không cần xóa; tiếp tục tạo layout mới.", step.Label))
+				continue
+			}
+			return fmt.Errorf("%s %s thất bại: %w", step.Label, part, err)
+		}
+	}
 	return nil
 }
 

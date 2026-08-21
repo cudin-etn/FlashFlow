@@ -116,7 +116,7 @@ const FlashWizard: React.FC<FlashWizardProps> = ({ mode, filePath, onExit }) => 
                     </div>
                     <div className="flex items-center gap-2 mt-2">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${mode === 'ai' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'}`}>{mode === 'ai' ? "AUTO FLOW" : "MANUAL FLOW"}</span>
-                        <span className="text-[10px] font-semibold text-slate-400">v2.1.3</span>
+                        <span className="text-[10px] font-semibold text-slate-400">v2.1.4</span>
                     </div>
                 </div>
                 <div className="flex-1 px-4 py-2 space-y-1 overflow-y-auto custom-scrollbar">
