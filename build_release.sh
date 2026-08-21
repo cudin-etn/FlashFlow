@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-VERSION="2.1.2"
+VERSION="2.1.3"
 echo "🚀 FlashFlow v${VERSION} — Build Release (All Platforms)"
 echo "========================================================"
 

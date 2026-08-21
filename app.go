@@ -1112,6 +1112,19 @@ func isHeavyFastbootCommand(args []string) bool {
 	return false
 }
 
+// isFastbootRebootToFastbootTimeout identifies the one command where a timeout
+// is not enough to conclude that the mode switch failed. On Windows, fastboot
+// can keep its process alive while the USB device re-enumerates, even after the
+// bootloader accepted "reboot fastboot". The caller must still verify that the
+// device actually entered FastbootD before continuing.
+func isFastbootRebootToFastbootTimeout(err error) bool {
+	if err == nil {
+		return false
+	}
+	message := strings.ToLower(err.Error())
+	return strings.Contains(message, "lệnh timeout") && strings.Contains(message, "reboot fastboot")
+}
+
 func (a *App) markRebooting(reason string) {
 	a.setRebootGrace(35 * time.Second)
 	currentSerial := ""
@@ -1607,7 +1620,7 @@ type UpdateInfo struct {
 	Changelog  string `json:"changelog"`
 }
 
-const CurrentVersion = "2.1.2"
+const CurrentVersion = "2.1.3"
 const AppIdentifier = "flashflow"
 const FlashFlowReleasesAPI = "https://api.github.com/repos/cudin-etn/FlashFlow/releases"
 

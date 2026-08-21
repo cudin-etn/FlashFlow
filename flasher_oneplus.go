@@ -561,7 +561,14 @@ func (a *App) executeOnePlusSmartFlash(rootPath, fastbootBin, serial string, ski
 	wailsRuntime.EventsEmit(a.ctx, "flash_log", "----------------------------------------")
 	wailsRuntime.EventsEmit(a.ctx, "flash_log", ">>> [4/5] Reboot sang FastbootD...")
 	if err := a.RunCommandStreaming("", fastbootBin, onePlusFastbootArgs(serial, "reboot", "fastboot")...); err != nil {
-		return fmt.Errorf("reboot fastbootd thất bại: %v", err)
+		// On Windows fastboot may not exit while the USB device is changing
+		// modes. Do not falsely fail the session merely because that client
+		// process timed out: waitForSpecificMode below is the authoritative
+		// confirmation. Any other error is still fatal.
+		if !isFastbootRebootToFastbootTimeout(err) {
+			return fmt.Errorf("reboot fastbootd thất bại: %v", err)
+		}
+		wailsRuntime.EventsEmit(a.ctx, "flash_log", ">>> Lệnh reboot FastbootD chưa tự thoát trên Windows; đang xác minh thiết bị đã vào FastbootD...")
 	}
 	if err := a.waitForSpecificMode("fastbootd", serial); err != nil {
 		return err
