@@ -10,15 +10,14 @@
 
 - Release công khai hiện tại: **v2.1.4** (`flashflow-v2.1.4`), tạo từ commit
   `eb32856` — `fix: provision OnePlus dynamic partitions before flashing`.
-- Mã nguồn hiện tại còn có một commit **chưa đẩy/chưa phát hành**:
+- Mã nguồn `main` hiện có một commit **đã đẩy nhưng chưa phát hành**:
   `486d864` — `fix: flash loose images shipped with super ROMs`.
   Commit này khôi phục hành vi v2.0.3 cho ROM có `super.img`: sau khi flash
   `super`, tiếp tục flash toàn bộ image rời còn lại trong FastbootD.
-- `main` đang ahead `origin/main` một commit. Không được gắn build từ commit
-  này là v2.1.4; nếu phát hành, phải tăng phiên bản/tag mới (ví dụ v2.1.5),
-  build lại và upload lại asset.
-- Các thư mục `build/release-v213/` và `build/release-v214/` chỉ là artifact
-  build cục bộ, đang untracked; không commit chúng vào source.
+- Không được gắn build từ phần source sau tag v2.1.4 là v2.1.4; nếu phát hành,
+  phải tăng phiên bản/tag mới (ví dụ v2.1.5), build lại và upload lại asset.
+- Local chỉ giữ `build/release-v214/` (artifact v2.1.4, untracked). Artifact
+  v2.1.0–v2.1.3 và tag FlashFlow cũ đã được dọn dẹp.
 
 ## Kênh update GitHub
 
